@@ -1,7 +1,55 @@
+#Set up an application context with app.app_context().
+#Import db from app.
+#Create all the tables in the database.
+#Run the application.
+#from application import db
+#from application import create_app
+
+
+#Define database.
+#Define Drink class.
+#Define index route.
+#Define get_drinks route.
+#Run app.
 from flask import Flask
 app = Flask(__name__)
+from flask_sqlalchemy import SQLAlchemy
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+db = SQLAlchemy(app)
+
+#with app.app_context():
+  #db.create_all()
+
+#with app.app_context():
+  #db.session.add(Drink(name='Vodka Tonic', description='A refreshing beverage.'))
+  #db.session.add(Drink(name='Gin and Tonic', description='Another refreshing beverage.'))
+  #db.session.commit()
+  #drinks = Drink.query.all()
+  #print(drinks)
+
+class Drink(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(80), unique=True, nullable=False)
+  description = db.Column(db.String(120))
+
+  def __repr__(self):
+    return f"{self.name} - {self.description}"
 
 @app.route('/')
 def index():
-  return 'Hello, world!'
+  return 'Hello world.'
 
+@app.route('/drinks')
+def get_drinks():
+  drinks = Drink.query.all()
+  output = []
+  for drink in drinks:
+    drink_data = {'name': drink.name, 'description': drink.description}
+    output.append(drink_data) 
+  return {"drinks": output}
+
+@app.route('/drinks/<id>')
+def get_drink(id):
+  drink = Drink.query.get_or_404(id)
+  return {"name": drink.name, "description": drink.description}
